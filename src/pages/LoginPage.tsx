@@ -4,7 +4,7 @@ import { useLogin } from '../hooks/useLogin';
 export function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { mutate: doLogin, isPending, isError, error } = useLogin();
+  const { mutate: doLogin, isPending } = useLogin();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -45,12 +45,6 @@ export function LoginPage() {
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
-
-          {isError && (
-            <p className="text-sm text-red-600">
-              {error?.message === 'HTTP 401' ? 'Invalid username or password.' : 'Something went wrong. Please try again.'}
-            </p>
-          )}
 
           <button
             type="submit"

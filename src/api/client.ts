@@ -1,3 +1,5 @@
+import type { ApiMessage, ApiResponse } from './apiResponse';
+
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'https://localhost:7000';
 const TOKEN_KEY = 'colleger_token';
 
@@ -17,6 +19,18 @@ export function getTokenPayload(): { sub: string; name: string } | null {
   }
 }
 
+export class ApiError extends Error {
+  readonly messages: ApiMessage[];
+  readonly statusCode: number;
+
+  constructor(messages: ApiMessage[], statusCode: number) {
+    const desc = messages.find(m => m.errorLevel === 'Error' || m.errorLevel === 'Fatal')?.description;
+    super(desc ?? `HTTP ${statusCode}`);
+    this.messages = messages;
+    this.statusCode = statusCode;
+  }
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = tokenStorage.get();
 
@@ -29,13 +43,31 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     },
   });
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || `HTTP ${response.status}`);
+  if (response.status === 204) return undefined as T;
+
+  let apiResponse: ApiResponse<T>;
+  try {
+    apiResponse = await response.json();
+  } catch {
+    throw new ApiError(
+      [{ errorLevel: 'Error', code: response.status, description: `HTTP ${response.status}` }],
+      response.status,
+    );
   }
 
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+  const messages = apiResponse.messages ?? [];
+  const hasErrors = messages.some(m => m.errorLevel === 'Error' || m.errorLevel === 'Fatal');
+
+  if (!response.ok || hasErrors) {
+    throw new ApiError(
+      messages.length > 0
+        ? messages
+        : [{ errorLevel: 'Error', code: response.status, description: `HTTP ${response.status}` }],
+      response.status,
+    );
+  }
+
+  return apiResponse.data as T;
 }
 
 export const apiClient = {
