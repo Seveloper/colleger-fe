@@ -31,6 +31,10 @@ export class ApiError extends Error {
   }
 }
 
+// Thrown on 401 — the request function also clears the token and redirects to
+// /login before throwing, so callers don't need to do anything extra.
+export class UnauthorizedError extends ApiError {}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = tokenStorage.get();
 
@@ -44,6 +48,13 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   });
 
   if (response.status === 204) return undefined as T;
+
+  if (response.status === 401) {
+    tokenStorage.clear();
+    const returnTo = window.location.pathname + window.location.search;
+    window.location.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+    throw new UnauthorizedError([], 401);
+  }
 
   let apiResponse: ApiResponse<T>;
   try {

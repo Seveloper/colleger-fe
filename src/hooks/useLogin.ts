@@ -11,7 +11,8 @@ export function useLogin() {
       login(username, password),
     onSuccess: (data) => {
       tokenStorage.set(data.accessToken);
-      navigate('/');
+      const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
+      navigate(returnTo, { replace: true });
     },
   });
 }

@@ -7,7 +7,7 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { StudentsPage } from './pages/StudentsPage';
 import { ToastProvider, useToast } from './context/ToastContext';
-import { ApiError } from './api/client';
+import { ApiError, UnauthorizedError } from './api/client';
 import type { ApiMessage } from './api/apiResponse';
 
 // Mutable ref that bridges the QueryClient (created once, outside React) to the ToastContext.
@@ -16,10 +16,16 @@ const toastRef = { fn: null as ((msgs: ApiMessage[]) => void) | null };
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
   mutationCache: new MutationCache({
-    onError: error => { if (error instanceof ApiError) toastRef.fn?.(error.messages); },
+    onError: error => {
+      if (error instanceof ApiError && !(error instanceof UnauthorizedError))
+        toastRef.fn?.(error.messages);
+    },
   }),
   queryCache: new QueryCache({
-    onError: error => { if (error instanceof ApiError) toastRef.fn?.(error.messages); },
+    onError: error => {
+      if (error instanceof ApiError && !(error instanceof UnauthorizedError))
+        toastRef.fn?.(error.messages);
+    },
   }),
 });
 
