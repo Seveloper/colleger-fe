@@ -49,7 +49,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (response.status === 204) return undefined as T;
 
-  if (response.status === 401) {
+  if (response.status === 401 && window.location.pathname !== '/login') {
     tokenStorage.clear();
     const returnTo = window.location.pathname + window.location.search;
     window.location.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`);
