@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PrivateRoute } from './components/PrivateRoute';
+import { Layout } from './components/layout/Layout';
 import { LoginPage } from './pages/LoginPage';
+import { DashboardPage } from './pages/DashboardPage';
 
 const queryClient = new QueryClient();
 
@@ -12,7 +14,10 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route element={<PrivateRoute />}>
-            <Route path="/" element={<div className="p-8 text-gray-700">Dashboard coming soon.</div>} />
+            <Route element={<Layout />}>
+              <Route path="/" element={<DashboardPage />} />
+              {/* Future pages slot in here */}
+            </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

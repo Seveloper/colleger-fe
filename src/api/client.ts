@@ -7,6 +7,16 @@ export const tokenStorage = {
   clear: () => localStorage.removeItem(TOKEN_KEY),
 };
 
+export function getTokenPayload(): { sub: string; name: string } | null {
+  const token = tokenStorage.get();
+  if (!token) return null;
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch {
+    return null;
+  }
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = tokenStorage.get();
 
