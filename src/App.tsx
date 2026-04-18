@@ -4,6 +4,7 @@ import { PrivateRoute } from './components/PrivateRoute';
 import { Layout } from './components/layout/Layout';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { StudentsPage } from './pages/StudentsPage';
 
 const queryClient = new QueryClient();
 
@@ -16,7 +17,7 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route element={<Layout />}>
               <Route path="/" element={<DashboardPage />} />
-              {/* Future pages slot in here */}
+              <Route path="/students" element={<StudentsPage />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
